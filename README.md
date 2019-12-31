@@ -1,1 +1,1 @@
-# some_coq_proofs
+Some proofs in Coq. 
