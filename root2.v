@@ -197,3 +197,6 @@ Theorem root_2_irr : forall p q : nat,p * p <> 2 * q * q.
   assert (Nat.even(p)= true).
   apply square_even_is_even.
   assumption.
+
+
+  (* The proof is incomplete, still need a way to define relatively prime numbers (that's readily available from coq) and a few lemmas need to be proved which are listed as axioms - Vedant Chavda :) *)
