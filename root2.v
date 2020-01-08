@@ -183,7 +183,11 @@ omega.
 Qed.
 
 
+<<<<<<< HEAD
 Theorem root_2_irr : forall p q : nat,p * p <> 2 * q * q.
+=======
+Theorem root_2_irr : forall p q : nat, p * p <> 2 * q * q.
+>>>>>>> 91130756f07e345812d4e16572e11dfe799083c7
   Proof.
   intros.
   unfold not.
