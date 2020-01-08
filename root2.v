@@ -1,5 +1,14 @@
 Require Import Omega.
 Require Import Nat.
+Require Export Arith_base.
+Require Import Arith.Even.
+Require Import BinPos BinInt BinNat Pnat Nnat.
+Require Import PeanoNat.
+Require Import ZArith_base.
+Require Import ZArithRing.
+Require Import Zcomplements.
+Require Import Zdiv.
+Require Import Wf_nat.
 
 Lemma even_exists : forall x : nat,
 Nat.even x = true -> exists k, 2*k = x.
@@ -47,7 +56,51 @@ Proof.
 Qed.
 
 
-  Theorem square_even_is_even : forall x : nat, Nat.even(x * x) = true <->  Nat.even(x) = true.
+Axiom trivial : forall x : nat, 2*(x-1) +1 = 2*x - 1.
+
+
+
+
+  Lemma even_plus_one_is_odd : forall x : nat, Nat.even(x+1) = true -> Nat.odd(x) = true.
+Proof.
+intros.
+apply Nat.even_spec in H.
+apply Nat.odd_spec.
+unfold Nat.Odd.
+unfold Nat.Even in H.
+destruct H.
+apply f_equal with (f := fun t => t-1) in H.
+replace (x +1-1) with (x) in H.
+replace (2*x0 -1) with (2*(x0-1) + 1) in H.
+exists (x0-1).
+assumption.
+apply trivial.
+omega.
+Qed.
+
+  
+  Theorem easy : forall p q : Prop, (p->q) -> (~q->~p).
+Proof.
+intros.
+intro.
+apply H0.
+apply H.
+assumption.
+Qed.
+
+Lemma not_even_not_odd : forall n, even n -> odd n -> False.
+Proof.
+induction n.
+intros even_0 odd_0.
+inversion odd_0.
+intros even_Sn odd_Sn.
+inversion even_Sn.
+inversion  odd_Sn.
+auto with arith.
+Qed.
+
+Axiom not_even_implies_odd: forall x : nat, Nat.even(x) <> true -> Nat.odd(x) = true.
+Theorem square_even_is_even : forall x : nat, Nat.even(x * x) = true <->  Nat.even(x) = true.
 Proof.
 intros.
 induction x.
@@ -57,31 +110,80 @@ auto.
 auto.
 split.
 intros.
-replace (S x  * S x) with ((x*x + 1) + 2*x) in 
-exists (x0-a).
+replace (S x  * S x) with ((x*x + 1) + 2*x) in H.
+assert (forall p q : nat, Nat.even(p+2*q) = true -> Nat.even(p) = true).
+apply even_minus_even_is_even.
+assert (Nat.even(x*x+1) = true).
+destruct (H0 (x*x+1) (x)).
+assumption.
 auto.
-replace (2*(x0-a)) with (2*x0 - 2*a).
-apply f_equal with (f := fun t => t-2*a) in H.
-replace (x+ 2*a - 2*a) with (x) in H.
-
-replace (S x * S x) with ((1+x) * (1+x)).
-rewrite Nat.mul_add_distr_r.
+assert (Nat.odd(x*x) = true).
+apply even_plus_one_is_odd.
+assumption.
+destruct IHx.
+assert (Nat.odd x = true).
+assert (~Nat.even(x*x) = true -> ~Nat.even(x) = true).     
+apply easy.
+assumption.
+assert (Nat.even(x*x) <> true).
+unfold not.
+intros.
+assert (forall n : nat, (Nat.Even(n) -> Nat.Odd(n) -> False)).
+intros.
+apply even_equiv in H7.
+apply odd_equiv in H8.
+cut (odd n).
+cut (even n).
+apply not_even_not_odd.
+assumption.
+assumption.
+destruct (H7 (x*x)).
+cut (Nat.even(x*x) = true).
+apply Nat.even_spec.
+assumption.
+cut (Nat.odd(x*x) = true).
+apply Nat.odd_spec.
+assumption.
+assert (Nat.even x <> true).
+apply H5.
+assumption.
+cut (Nat.even x <> true).
+apply not_even_implies_odd.
+assumption.
+replace (S x) with (x+1).
+cut (Nat.odd(1)= true).
+cut (Nat.odd(x) = true).
+rewrite Nat.even_spec.
+repeat rewrite Nat.odd_spec.
+rewrite <-  even_equiv.
+repeat rewrite <- odd_equiv.
+apply odd_even_plus. 
+assumption.
+auto.
+omega.
+simpl.
+replace (S x) with (x+1).
 rewrite Nat.mul_add_distr_l.
-rewrite Nat.mul_add_distr_l.
-rewrite Nat.add_assoc.
-repeat rewrite Nat.mul_1_l.
-rewrite Nat.mul_1_r.
+repeat omega.
+omega.
+intros.
+rewrite Nat.even_spec in H.
+rewrite Nat.even_spec.
+unfold Nat.Even in H.
+unfold Nat.Even.
+destruct H.
+replace (S x) with (2*x0).
+exists (2*x0*x0).
+rewrite <- Nat.mul_assoc.
+apply f_equal.
+rewrite Nat.mul_assoc.
+replace (x0*2) with (2*x0).
+auto.
+omega.
+Qed.
 
 
-
-
-
-
-
-
-
-  
-  Theorem root_2_irr : forall p q : nat, p * p <> 2 * q * q.
+Theorem root_2_irr : forall p q : nat, rel_prime p q ->  p * p <> 2 * q * q.
   Proof.
   intros.
   unfold not.
@@ -92,4 +194,6 @@ rewrite Nat.mul_1_r.
   apply two_times_x_even.
   symmetry.
   apply mult_assoc_reverse.
-  
+  assert (Nat.even(p)= true).
+  apply square_even_is_even.
+  assumption.
